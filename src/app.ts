@@ -9,11 +9,19 @@ const app: Application = express();
 
 // middleware
 app.use(express.json());
+const allowedOrigins = [
+  "https://jiboneducation.com",
+  "http://localhost:3000",
+  ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+];
+
 app.use(cors({
-  origin: [
-    "https://jiboneducation.com",
-    "http://localhost:3000",
-  ],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error(`CORS: origin ${origin} not allowed`));
+  },
   credentials: true,
 }));
 
