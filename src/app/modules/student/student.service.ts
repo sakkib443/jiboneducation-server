@@ -1162,6 +1162,7 @@ const updateScore = async (studentId: string, module: string, score: number) => 
             listening: { raw: 0, band: 0, correctAnswers: 0, totalQuestions: 40 },
             reading: { raw: 0, band: 0, correctAnswers: 0, totalQuestions: 40 },
             writing: { task1Band: 0, task2Band: 0, overallBand: 0 },
+            speaking: { band: 0 },
             overall: 0,
         };
     }
@@ -1172,14 +1173,20 @@ const updateScore = async (studentId: string, module: string, score: number) => 
         student.scores.reading.band = score;
     } else if (moduleName === 'writing') {
         student.scores.writing.overallBand = score;
+    } else if (moduleName === 'speaking') {
+        if (!student.scores.speaking) {
+            student.scores.speaking = { band: 0 };
+        }
+        student.scores.speaking.band = score;
     }
 
     // Recalculate overall using Official IELTS rules
     const listening = student.scores.listening?.band || 0;
     const reading = student.scores.reading?.band || 0;
     const writing = student.scores.writing?.overallBand || 0;
+    const speaking = student.scores.speaking?.band || 0;
 
-    const bands = [listening, reading, writing].filter(s => s > 0);
+    const bands = [listening, reading, writing, speaking].filter(s => s > 0);
     if (bands.length > 0) {
         student.scores.overall = AutoMarkingService.calculateOverallBand(bands);
     }
@@ -1678,8 +1685,9 @@ const resetModule = async (
     const listeningBand = module === "listening" ? 0 : (existingScores.listening?.band || 0);
     const readingBand = module === "reading" ? 0 : (existingScores.reading?.band || 0);
     const writingBand = module === "writing" ? 0 : (existingScores.writing?.overallBand || 0);
+    const speakingBand = module === "speaking" ? 0 : (existingScores.speaking?.band || 0);
 
-    const bands = [listeningBand, readingBand, writingBand].filter(b => b > 0);
+    const bands = [listeningBand, readingBand, writingBand, speakingBand].filter(b => b > 0);
     if (bands.length > 0) {
         const sum = bands.reduce((a, b) => a + b, 0);
         updateObj["scores.overall"] = Math.round((sum / bands.length) * 2) / 2;
