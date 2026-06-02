@@ -11,6 +11,7 @@ const app: Application = express();
 app.use(express.json());
 const allowedOrigins = [
   "https://jiboneducation.com",
+  "https://www.jiboneducation.com",
   "http://localhost:3000",
   ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
 ];
@@ -20,6 +21,13 @@ app.use(cors({
     // Allow requests with no origin (mobile apps, curl, Postman)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) return callback(null, true);
+    // In development, allow any localhost / 127.0.0.1 port (e.g. Next.js falls back to 3001)
+    if (
+      process.env.NODE_ENV !== "production" &&
+      /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
     callback(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
