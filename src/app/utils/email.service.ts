@@ -45,8 +45,12 @@ const bandColor = (band: number) =>
 // White letterhead header: logo + serif wordmark + tagline + gold rule
 const emailHeader = () => `
     <tr>
-        <td style="background:#ffffff; padding:34px 40px 0 40px; text-align:center;">
-            <img src="cid:${LOGO_CID}" alt="${BRAND.name}" height="56" style="display:block; margin:0 auto 12px auto; height:56px; width:auto; border:0; outline:none;" />
+        <td style="background:#ffffff; padding:20px 40px 0 40px;" align="right">
+            <img src="cid:${LOGO_CID}" alt="${BRAND.name}" height="34" style="display:inline-block; height:34px; width:auto; border:0; outline:none;" />
+        </td>
+    </tr>
+    <tr>
+        <td style="background:#ffffff; padding:10px 40px 0 40px; text-align:center;">
             <div style="font-family:Georgia,'Times New Roman',serif; font-size:23px; font-weight:700; letter-spacing:0.4px; color:${BRAND.teal};">${BRAND.name}</div>
             <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:${BRAND.muted}; margin-top:6px;">${BRAND.tagline}</div>
         </td>
