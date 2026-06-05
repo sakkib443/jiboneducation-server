@@ -27,7 +27,7 @@ const BRAND = {
     line: "#E6EAEC",
     panel: "#F6F8F8",
     pageBg: "#ECEFF0",
-    contact: "info@jiboneducation.com",
+    contact: "jiboneducation2123@gmail.com",
 };
 
 // Logo is embedded inline via CID (Content-ID) attachment so it renders in every
