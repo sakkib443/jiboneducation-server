@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { LOGO_BASE64 } from "./brandLogo";
 
 // Create transporter using Gmail SMTP
 const createTransporter = () => {
@@ -29,8 +30,14 @@ const BRAND = {
     contact: "info@jiboneducation.com",
 };
 
-const getLogoUrl = () =>
-    `${process.env.FRONTEND_URL || "https://jiboneducation.com"}/images/logo.png`;
+// Logo is embedded inline via CID (Content-ID) attachment so it renders in every
+// email client (local or production) without depending on an external image URL.
+const LOGO_CID = "jibonlogo";
+const logoAttachment = () => ({
+    filename: "jibon-education-logo.png",
+    content: Buffer.from(LOGO_BASE64, "base64"),
+    cid: LOGO_CID,
+});
 
 const bandColor = (band: number) =>
     band >= 7 ? "#2E7D5B" : band >= 5 ? BRAND.teal : "#B4524A";
@@ -39,7 +46,7 @@ const bandColor = (band: number) =>
 const emailHeader = () => `
     <tr>
         <td style="background:#ffffff; padding:34px 40px 0 40px; text-align:center;">
-            <img src="${getLogoUrl()}" alt="${BRAND.name}" height="56" style="display:block; margin:0 auto 12px auto; height:56px; width:auto; border:0; outline:none;" />
+            <img src="cid:${LOGO_CID}" alt="${BRAND.name}" height="56" style="display:block; margin:0 auto 12px auto; height:56px; width:auto; border:0; outline:none;" />
             <div style="font-family:Georgia,'Times New Roman',serif; font-size:23px; font-weight:700; letter-spacing:0.4px; color:${BRAND.teal};">${BRAND.name}</div>
             <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:${BRAND.muted}; margin-top:6px;">${BRAND.tagline}</div>
         </td>
@@ -302,6 +309,7 @@ export const sendStudentRegistrationEmail = async (data: {
         const mailOptions = {
             from: `"Jibon Education IELTS" <${process.env.EMAIL_USER}>`,
             to: data.email,
+            attachments: [logoAttachment()],
             subject: `🎓 IELTS Exam Registration Successful - ${data.examId}`,
             html: getStudentRegistrationTemplate({
                 studentName: data.studentName,
@@ -354,6 +362,7 @@ export const sendResultPublishedEmail = async (data: {
         const mailOptions = {
             from: `"Jibon Education IELTS" <${process.env.EMAIL_USER}>`,
             to: data.email,
+            attachments: [logoAttachment()],
             subject: `🏆 Your IELTS Result is Ready - Overall Band ${data.overallBand}`,
             html: getResultPublishedTemplate({
                 studentName: data.studentName,
