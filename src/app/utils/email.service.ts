@@ -42,6 +42,16 @@ const logoAttachment = () => ({
 const bandColor = (band: number) =>
     band >= 7 ? "#2E7D5B" : band >= 5 ? BRAND.teal : "#B4524A";
 
+// IELTS proficiency level for an overall band score
+const getBandLabel = (band: number) =>
+    band >= 8.5 ? "Expert User"
+        : band >= 7.5 ? "Very Good User"
+            : band >= 6.5 ? "Competent User"
+                : band >= 5.5 ? "Modest User"
+                    : band >= 4.5 ? "Limited User"
+                        : band > 0 ? "Basic User"
+                            : "Not Graded";
+
 // White letterhead header: logo + serif wordmark + tagline + gold rule
 const emailHeader = () => `
     <tr>
@@ -242,19 +252,42 @@ const getResultPublishedTemplate = (data: {
 
                     <!-- Greeting -->
                     <tr>
-                        <td style="padding:18px 40px 0 40px; text-align:center;">
-                            <p style="margin:0 0 6px 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; color:${BRAND.ink};">Dear ${data.studentName},</p>
-                            <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:13px; color:${BRAND.muted};">Exam ID: <strong style="color:${BRAND.body};">${data.examId}</strong> &nbsp;|&nbsp; Exam Date: <strong style="color:${BRAND.body};">${data.examDate}</strong></p>
+                        <td style="padding:20px 40px 0 40px;">
+                            <p style="margin:0 0 14px 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; color:${BRAND.ink};">Dear ${data.studentName},</p>
+                            <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.7; color:${BRAND.body};">
+                                Your IELTS examination result has been published. A summary of your band scores is provided below. You can view and download your detailed score report from the candidate portal.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Candidate & exam details panel -->
+                    <tr>
+                        <td style="padding:22px 40px 0 40px;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.line}; border-radius:8px; background:${BRAND.panel};">
+                                <tr>
+                                    <td style="padding:14px 22px; border-bottom:1px solid ${BRAND.line}; font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:${BRAND.teal}; font-weight:bold;">Candidate &amp; Exam Details</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 22px 14px 22px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                            ${detailRow("Candidate", `<span style="color:${BRAND.ink}; font-weight:bold;">${data.studentName}</span>`)}
+                                            ${detailRow("Exam ID", `<span style="font-family:'Courier New',monospace; font-weight:bold; color:${BRAND.ink}; letter-spacing:0.5px;">${data.examId}</span>`)}
+                                            ${detailRow("Exam Date", `<span style="color:${BRAND.ink}; font-weight:bold;">${data.examDate}</span>`, true)}
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
                         </td>
                     </tr>
 
                     <!-- Overall band -->
                     <tr>
                         <td style="padding:24px 40px 0 40px;" align="center">
-                            <table role="presentation" width="240" cellpadding="0" cellspacing="0" style="background:${BRAND.teal}; border-radius:10px;">
+                            <table role="presentation" width="260" cellpadding="0" cellspacing="0" style="background:${BRAND.teal}; border-radius:10px;">
                                 <tr><td style="padding:22px 20px; text-align:center;">
                                     <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#BFE0E2;">Overall Band Score</div>
                                     <div style="font-family:Georgia,'Times New Roman',serif; font-size:52px; font-weight:700; color:#ffffff; line-height:1.1; margin-top:4px;">${data.overallBand}</div>
+                                    <div style="font-family:Arial,Helvetica,sans-serif; font-size:12px; font-weight:bold; letter-spacing:0.5px; color:#ffffff; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.22);">${getBandLabel(data.overallBand)}</div>
                                 </td></tr>
                             </table>
                         </td>
@@ -271,6 +304,19 @@ const getResultPublishedTemplate = (data: {
                                 <tr>
                                     ${moduleCell("Writing", data.writingBand)}
                                     ${moduleCell("Speaking", data.speakingBand)}
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Info note -->
+                    <tr>
+                        <td style="padding:22px 40px 0 40px;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.panel}; border-radius:6px;">
+                                <tr>
+                                    <td style="padding:14px 18px; font-family:Arial,Helvetica,sans-serif; font-size:12.5px; line-height:1.6; color:${BRAND.body};">
+                                        <strong style="color:${BRAND.ink};">Note:</strong> Each module is scored from 0 to 9, and the overall band is the average of the four modules, rounded to the nearest half band. This is your official result from ${BRAND.name}.
+                                    </td>
                                 </tr>
                             </table>
                         </td>
