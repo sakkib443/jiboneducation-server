@@ -11,7 +11,97 @@ const createTransporter = () => {
     });
 };
 
-// Email templates with beautiful formatting
+// ──────────────────────────────────────────────────────────────────────────
+// Shared brand + email building blocks (classic, professional letterhead look)
+// ──────────────────────────────────────────────────────────────────────────
+const BRAND = {
+    name: "Jibon Education",
+    tagline: "IELTS Examination System",
+    teal: "#0E5C63",
+    tealDark: "#0A464C",
+    gold: "#C8A24B",
+    ink: "#1F2A2E",
+    body: "#48555B",
+    muted: "#90999E",
+    line: "#E6EAEC",
+    panel: "#F6F8F8",
+    pageBg: "#ECEFF0",
+    contact: "info@jiboneducation.com",
+};
+
+const getLogoUrl = () =>
+    `${process.env.FRONTEND_URL || "https://jiboneducation.com"}/images/logo.png`;
+
+const bandColor = (band: number) =>
+    band >= 7 ? "#2E7D5B" : band >= 5 ? BRAND.teal : "#B4524A";
+
+// White letterhead header: logo + serif wordmark + tagline + gold rule
+const emailHeader = () => `
+    <tr>
+        <td style="background:#ffffff; padding:34px 40px 0 40px; text-align:center;">
+            <img src="${getLogoUrl()}" alt="${BRAND.name}" height="56" style="display:block; margin:0 auto 12px auto; height:56px; width:auto; border:0; outline:none;" />
+            <div style="font-family:Georgia,'Times New Roman',serif; font-size:23px; font-weight:700; letter-spacing:0.4px; color:${BRAND.teal};">${BRAND.name}</div>
+            <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:2.5px; text-transform:uppercase; color:${BRAND.muted}; margin-top:6px;">${BRAND.tagline}</div>
+        </td>
+    </tr>
+    <tr>
+        <td align="center" style="background:#ffffff; padding:16px 40px 0 40px;">
+            <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+                <td style="width:54px; height:3px; background:${BRAND.gold}; font-size:0; line-height:0;">&nbsp;</td>
+            </tr></table>
+        </td>
+    </tr>
+`;
+
+const emailFooter = () => `
+    <tr>
+        <td style="background:${BRAND.tealDark}; padding:26px 40px; text-align:center;">
+            <div style="font-family:Georgia,'Times New Roman',serif; color:#ffffff; font-size:16px; font-weight:700; letter-spacing:0.4px;">${BRAND.name}</div>
+            <div style="font-family:Arial,Helvetica,sans-serif; color:#A9C3C5; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; margin-top:5px;">${BRAND.tagline}</div>
+            <div style="height:1px; background:rgba(255,255,255,0.12); margin:16px auto; max-width:200px;"></div>
+            <div style="font-family:Arial,Helvetica,sans-serif; color:#8FB0B2; font-size:12px; line-height:1.7;">
+                For any queries, contact <a href="mailto:${BRAND.contact}" style="color:${BRAND.gold}; text-decoration:none;">${BRAND.contact}</a><br/>
+                &copy; ${new Date().getFullYear()} ${BRAND.name}. All rights reserved.
+            </div>
+        </td>
+    </tr>
+`;
+
+const emailShell = (title: string, inner: string) => `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${title}</title>
+</head>
+<body style="margin:0; padding:0; background:${BRAND.pageBg}; font-family:Arial,Helvetica,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.pageBg};">
+        <tr>
+            <td align="center" style="padding:32px 12px;">
+                <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:600px; max-width:600px; background:#ffffff; border:1px solid ${BRAND.line}; border-radius:10px; overflow:hidden;">
+                    ${emailHeader()}
+                    ${inner}
+                    ${emailFooter()}
+                </table>
+                <div style="font-family:Arial,Helvetica,sans-serif; color:${BRAND.muted}; font-size:11px; margin-top:16px;">This is an automated message from ${BRAND.name}. Please do not reply to this email.</div>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>`;
+
+// A single label/value row for the detail panels
+const detailRow = (label: string, value: string, isLast = false) => `
+    <tr>
+        <td style="padding:11px 0; ${isLast ? "" : `border-bottom:1px solid ${BRAND.line};`} font-family:Arial,Helvetica,sans-serif; font-size:13px; color:${BRAND.muted}; width:130px; vertical-align:top;">${label}</td>
+        <td style="padding:11px 0; ${isLast ? "" : `border-bottom:1px solid ${BRAND.line};`} font-family:Arial,Helvetica,sans-serif; font-size:14px; text-align:right; vertical-align:top;">${value}</td>
+    </tr>
+`;
+
+// ──────────────────────────────────────────────────────────────────────────
+// Template: Student registration
+// ──────────────────────────────────────────────────────────────────────────
 const getStudentRegistrationTemplate = (data: {
     studentName: string;
     examId: string;
@@ -23,62 +113,38 @@ const getStudentRegistrationTemplate = (data: {
     speakingExamTime?: string;
     speakingMeetingLink?: string;
 }) => {
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IELTS Exam Registration</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 40px 0;">
-        <tr>
-            <td align="center">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden;">
-                    <!-- Header -->
+    const inner = `
+                    <!-- Title -->
                     <tr>
-                        <td style="background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); padding: 40px 30px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">🎓 Jibon Education</h1>
-                            <p style="color: #cffafe; margin: 10px 0 0 0; font-size: 16px;">IELTS Exam Portal</p>
+                        <td style="padding:28px 40px 0 40px; text-align:center;">
+                            <h1 style="margin:0; font-family:Georgia,'Times New Roman',serif; font-size:21px; font-weight:700; color:${BRAND.ink};">Registration Confirmed</h1>
                         </td>
                     </tr>
-                    
-                    <!-- Welcome Message -->
+
+                    <!-- Greeting -->
                     <tr>
-                        <td style="padding: 40px 30px 20px 30px;">
-                            <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px;">Welcome, ${data.studentName}! 🎉</h2>
-                            <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0;">
-                                Congratulations! Your IELTS exam registration has been successfully completed. Below are your login credentials:
+                        <td style="padding:20px 40px 0 40px;">
+                            <p style="margin:0 0 14px 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; color:${BRAND.ink};">Dear ${data.studentName},</p>
+                            <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:14px; line-height:1.7; color:${BRAND.body};">
+                                Your registration for the IELTS examination has been successfully completed. Your candidate login details are provided below. Please keep this information confidential, as it is required to access the examination portal.
                             </p>
                         </td>
                     </tr>
-                    
-                    <!-- Credentials Box -->
+
+                    <!-- Credentials panel -->
                     <tr>
-                        <td style="padding: 0 30px;">
-                            <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #ecfeff 0%, #cffafe 100%); border-radius: 12px; border: 2px solid #0891b2;">
+                        <td style="padding:24px 40px 0 40px;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.line}; border-radius:8px; background:${BRAND.panel};">
                                 <tr>
-                                    <td style="padding: 25px;">
-                                        <h3 style="color: #0e7490; margin: 0 0 20px 0; font-size: 18px; border-bottom: 2px solid #0891b2; padding-bottom: 10px;">📋 Your Login Credentials</h3>
-                                        
-                                        <table width="100%" cellpadding="8" cellspacing="0">
-                                            <tr>
-                                                <td style="color: #1f2937; font-weight: 600; width: 120px;">Exam ID:</td>
-                                                <td style="color: #0891b2; font-size: 18px; font-weight: 700; font-family: 'Courier New', monospace; background: #ffffff; padding: 8px 12px; border-radius: 6px;">${data.examId}</td>
-                                            </tr>
-                                            <tr>
-                                                <td style="color: #1f2937; font-weight: 600;">Email:</td>
-                                                <td style="color: #4b5563;">${data.email}</td>
-                                            </tr>
-                                            <tr>
-                                                <td style="color: #1f2937; font-weight: 600;">Password:</td>
-                                                <td style="color: #0891b2; font-weight: 700; font-family: 'Courier New', monospace; background: #ffffff; padding: 8px 12px; border-radius: 6px;">${data.password}</td>
-                                            </tr>
-                                            <tr>
-                                                <td style="color: #1f2937; font-weight: 600;">Exam Date:</td>
-                                                <td style="color: #dc2626; font-weight: 700;">${data.examDate}</td>
-                                            </tr>
+                                    <td style="padding:14px 22px; border-bottom:1px solid ${BRAND.line}; font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:${BRAND.teal}; font-weight:bold;">Candidate Login Details</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 22px 14px 22px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                            ${detailRow("Exam ID", `<span style="font-family:'Courier New',monospace; font-weight:bold; color:${BRAND.ink}; letter-spacing:0.5px;">${data.examId}</span>`)}
+                                            ${detailRow("Email", `<span style="color:${BRAND.body};">${data.email}</span>`)}
+                                            ${detailRow("Password", `<span style="font-family:'Courier New',monospace; font-weight:bold; color:${BRAND.ink}; letter-spacing:0.5px;">${data.password}</span>`)}
+                                            ${detailRow("Exam Date", `<span style="color:${BRAND.ink}; font-weight:bold;">${data.examDate}</span>`, true)}
                                         </table>
                                     </td>
                                 </tr>
@@ -86,78 +152,53 @@ const getStudentRegistrationTemplate = (data: {
                         </td>
                     </tr>
 
-                    <!-- Speaking Exam Schedule (conditional) -->
                     ${data.speakingExamDate ? `
+                    <!-- Speaking schedule panel -->
                     <tr>
-                        <td style="padding: 20px 30px 0 30px;">
-                            <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%); border-radius: 12px; border: 2px solid #7c3aed;">
+                        <td style="padding:16px 40px 0 40px;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.line}; border-left:3px solid ${BRAND.gold}; border-radius:8px; background:#ffffff;">
                                 <tr>
-                                    <td style="padding: 25px;">
-                                        <h3 style="color: #6d28d9; margin: 0 0 15px 0; font-size: 16px; border-bottom: 2px solid #7c3aed; padding-bottom: 8px;">🎤 Speaking Exam Schedule</h3>
-                                        <table width="100%" cellpadding="8" cellspacing="0">
-                                            <tr>
-                                                <td style="color: #1f2937; font-weight: 600; width: 140px;">Speaking Date:</td>
-                                                <td style="color: #6d28d9; font-weight: 700;">${data.speakingExamDate}</td>
-                                            </tr>
-                                            ${data.speakingExamTime ? `<tr>
-                                                <td style="color: #1f2937; font-weight: 600;">Speaking Time:</td>
-                                                <td style="color: #6d28d9; font-weight: 700;">${data.speakingExamTime}</td>
-                                            </tr>` : ''}
-                                            ${data.speakingMeetingLink ? `<tr>
-                                                <td style="color: #1f2937; font-weight: 600;">Meeting Link:</td>
-                                                <td><a href="${data.speakingMeetingLink}" style="color: #7c3aed; font-weight: 600; text-decoration: underline;">Join Meeting 🔗</a></td>
-                                            </tr>` : ''}
+                                    <td style="padding:14px 22px; border-bottom:1px solid ${BRAND.line}; font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:${BRAND.ink}; font-weight:bold;">Speaking Examination Schedule</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:4px 22px 14px 22px;">
+                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                            ${detailRow("Date", `<span style="color:${BRAND.ink}; font-weight:bold;">${data.speakingExamDate}</span>`, !data.speakingExamTime && !data.speakingMeetingLink)}
+                                            ${data.speakingExamTime ? detailRow("Time", `<span style="color:${BRAND.ink}; font-weight:bold;">${data.speakingExamTime}</span>`, !data.speakingMeetingLink) : ""}
+                                            ${data.speakingMeetingLink ? detailRow("Meeting Link", `<a href="${data.speakingMeetingLink}" style="color:${BRAND.teal}; font-weight:bold; text-decoration:underline;">Join Meeting</a>`, true) : ""}
                                         </table>
                                     </td>
                                 </tr>
                             </table>
                         </td>
-                    </tr>` : ''}
-                    
-                    <!-- Login Button -->
+                    </tr>` : ""}
+
+                    <!-- CTA -->
                     <tr>
-                        <td style="padding: 30px; text-align: center;">
-                            <a href="${data.loginUrl}" style="display: inline-block; background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.4);">
-                                🚀 Login Now
-                            </a>
+                        <td style="padding:28px 40px 4px 40px; text-align:center;">
+                            <a href="${data.loginUrl}" style="display:inline-block; background:${BRAND.teal}; color:#ffffff; text-decoration:none; padding:14px 38px; border-radius:6px; font-family:Arial,Helvetica,sans-serif; font-size:14px; font-weight:bold; letter-spacing:0.5px;">Access the Examination Portal</a>
                         </td>
                     </tr>
-                    
-                    <!-- Important Notice -->
+
+                    <!-- Notice -->
                     <tr>
-                        <td style="padding: 0 30px 30px 30px;">
-                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                        <td style="padding:22px 40px 32px 40px;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${BRAND.panel}; border-radius:6px;">
                                 <tr>
-                                    <td style="padding: 15px;">
-                                        <p style="color: #92400e; margin: 0; font-size: 14px;">
-                                            ⚠️ <strong>Important:</strong> Please do not share your password with anyone. During the exam, do not exit full-screen mode as it may result in disqualification.
-                                        </p>
+                                    <td style="padding:14px 18px; font-family:Arial,Helvetica,sans-serif; font-size:12.5px; line-height:1.6; color:${BRAND.body};">
+                                        <strong style="color:${BRAND.ink};">Please note:</strong> Do not share your password with anyone. During the examination, remaining in full-screen mode is mandatory — exiting it may result in disqualification.
                                     </td>
                                 </tr>
                             </table>
                         </td>
                     </tr>
-                    
-                    <!-- Footer -->
-                    <tr>
-                        <td style="background-color: #1f2937; padding: 25px 30px; text-align: center;">
-                            <p style="color: #9ca3af; margin: 0; font-size: 14px;">
-                                © ${new Date().getFullYear()} Jibon Education. All rights reserved.
-                            </p>
-                            <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 12px;">
-                                For any queries, contact us at: info@jiboneducation.com
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
     `;
+    return emailShell("IELTS Exam Registration", inner);
 };
 
+// ──────────────────────────────────────────────────────────────────────────
+// Template: Result published
+// ──────────────────────────────────────────────────────────────────────────
 const getResultPublishedTemplate = (data: {
     studentName: string;
     examId: string;
@@ -169,130 +210,78 @@ const getResultPublishedTemplate = (data: {
     examDate: string;
     resultUrl: string;
 }) => {
-    const getBandColor = (band: number) => {
-        if (band >= 7) return "#059669"; // Green
-        if (band >= 5) return "#0891b2"; // Cyan
-        return "#dc2626"; // Red
-    };
-
-    return `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IELTS Result Published</title>
-</head>
-<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f4f4;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f4f4f4; padding: 40px 0;">
-        <tr>
-            <td align="center">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); overflow: hidden;">
-                    <!-- Header -->
-                    <tr>
-                        <td style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 40px 30px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">🎉 Your Results Are Ready!</h1>
-                            <p style="color: #d1fae5; margin: 10px 0 0 0; font-size: 16px;">Jibon Education IELTS</p>
-                        </td>
-                    </tr>
-                    
-                    <!-- Congratulations Message -->
-                    <tr>
-                        <td style="padding: 40px 30px 20px 30px; text-align: center;">
-                            <h2 style="color: #1f2937; margin: 0 0 10px 0; font-size: 22px;">Congratulations, ${data.studentName}! 🏆</h2>
-                            <p style="color: #6b7280; font-size: 14px; margin: 0;">Exam ID: <strong>${data.examId}</strong> | Exam Date: <strong>${data.examDate}</strong></p>
-                        </td>
-                    </tr>
-                    
-                    <!-- Overall Band Score -->
-                    <tr>
-                        <td style="padding: 0 30px; text-align: center;">
-                            <table width="200" cellpadding="0" cellspacing="0" style="margin: 0 auto; background: linear-gradient(135deg, ${getBandColor(data.overallBand)} 0%, ${getBandColor(data.overallBand)}dd 100%); border-radius: 100px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);">
-                                <tr>
-                                    <td style="padding: 30px; text-align: center;">
-                                        <p style="color: rgba(255,255,255,0.9); margin: 0 0 5px 0; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Overall Band</p>
-                                        <p style="color: #ffffff; margin: 0; font-size: 56px; font-weight: 800;">${data.overallBand}</p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    
-                    <!-- Module Scores -->
-                    <tr>
-                        <td style="padding: 30px;">
-                            <table width="100%" cellpadding="0" cellspacing="10">
-                                <tr>
-                                    <!-- Listening -->
-                                    <td width="50%" style="background-color: #f0f9ff; border-radius: 12px; text-align: center; padding: 20px 10px;">
-                                        <p style="color: #0369a1; margin: 0 0 5px 0; font-size: 12px; font-weight: 600;">🎧 LISTENING</p>
-                                        <p style="color: #0c4a6e; margin: 0; font-size: 32px; font-weight: 700;">${data.listeningBand}</p>
-                                    </td>
-                                    <!-- Reading -->
-                                    <td width="50%" style="background-color: #ecfdf5; border-radius: 12px; text-align: center; padding: 20px 10px;">
-                                        <p style="color: #047857; margin: 0 0 5px 0; font-size: 12px; font-weight: 600;">📖 READING</p>
-                                        <p style="color: #064e3b; margin: 0; font-size: 32px; font-weight: 700;">${data.readingBand}</p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <!-- Writing -->
-                                    <td width="50%" style="background-color: #fef3c7; border-radius: 12px; text-align: center; padding: 20px 10px;">
-                                        <p style="color: #b45309; margin: 0 0 5px 0; font-size: 12px; font-weight: 600;">✍️ WRITING</p>
-                                        <p style="color: #78350f; margin: 0; font-size: 32px; font-weight: 700;">${data.writingBand}</p>
-                                    </td>
-                                    <!-- Speaking -->
-                                    <td width="50%" style="background-color: #fff7ed; border-radius: 12px; text-align: center; padding: 20px 10px;">
-                                        <p style="color: #c2410c; margin: 0 0 5px 0; font-size: 12px; font-weight: 600;">🎙️ SPEAKING</p>
-                                        <p style="color: #7c2d12; margin: 0; font-size: 32px; font-weight: 700;">${data.speakingBand}</p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    
-                    <!-- View Full Result Button -->
-                    <tr>
-                        <td style="padding: 10px 30px 30px 30px; text-align: center;">
-                            <a href="${data.resultUrl}" style="display: inline-block; background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 16px; font-weight: 600; box-shadow: 0 4px 12px rgba(8, 145, 178, 0.4);">
-                                📊 View Detailed Results
-                            </a>
-                        </td>
-                    </tr>
-                    
-                    <!-- Thank You Message -->
-                    <tr>
-                        <td style="padding: 0 30px 30px 30px;">
-                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; border-radius: 8px;">
-                                <tr>
-                                    <td style="padding: 20px; text-align: center;">
-                                        <p style="color: #4b5563; margin: 0; font-size: 15px; line-height: 1.6;">
-                                            Thank you for choosing Jibon Education for your IELTS preparation.<br>
-                                            We wish you all the best in your future endeavors! 🌟
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    
-                    <!-- Footer -->
-                    <tr>
-                        <td style="background-color: #1f2937; padding: 25px 30px; text-align: center;">
-                            <p style="color: #9ca3af; margin: 0; font-size: 14px;">
-                                © ${new Date().getFullYear()} Jibon Education. All rights reserved.
-                            </p>
-                            <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 12px;">
-                                For any queries, contact us at: info@jiboneducation.com
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
-</body>
-</html>
+    const moduleCell = (label: string, band: number) => `
+        <td width="50%" style="padding:6px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid ${BRAND.line}; border-radius:8px; background:${BRAND.panel};">
+                <tr><td style="padding:16px 12px; text-align:center;">
+                    <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:${BRAND.muted}; font-weight:bold;">${label}</div>
+                    <div style="font-family:Georgia,'Times New Roman',serif; font-size:30px; font-weight:700; color:${bandColor(band)}; margin-top:6px;">${band}</div>
+                </td></tr>
+            </table>
+        </td>
     `;
+
+    const inner = `
+                    <!-- Title -->
+                    <tr>
+                        <td style="padding:28px 40px 0 40px; text-align:center;">
+                            <h1 style="margin:0; font-family:Georgia,'Times New Roman',serif; font-size:21px; font-weight:700; color:${BRAND.ink};">Your IELTS Result</h1>
+                        </td>
+                    </tr>
+
+                    <!-- Greeting -->
+                    <tr>
+                        <td style="padding:18px 40px 0 40px; text-align:center;">
+                            <p style="margin:0 0 6px 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; color:${BRAND.ink};">Dear ${data.studentName},</p>
+                            <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:13px; color:${BRAND.muted};">Exam ID: <strong style="color:${BRAND.body};">${data.examId}</strong> &nbsp;|&nbsp; Exam Date: <strong style="color:${BRAND.body};">${data.examDate}</strong></p>
+                        </td>
+                    </tr>
+
+                    <!-- Overall band -->
+                    <tr>
+                        <td style="padding:24px 40px 0 40px;" align="center">
+                            <table role="presentation" width="240" cellpadding="0" cellspacing="0" style="background:${BRAND.teal}; border-radius:10px;">
+                                <tr><td style="padding:22px 20px; text-align:center;">
+                                    <div style="font-family:Arial,Helvetica,sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#BFE0E2;">Overall Band Score</div>
+                                    <div style="font-family:Georgia,'Times New Roman',serif; font-size:52px; font-weight:700; color:#ffffff; line-height:1.1; margin-top:4px;">${data.overallBand}</div>
+                                </td></tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Module scores -->
+                    <tr>
+                        <td style="padding:18px 34px 0 34px;">
+                            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    ${moduleCell("Listening", data.listeningBand)}
+                                    ${moduleCell("Reading", data.readingBand)}
+                                </tr>
+                                <tr>
+                                    ${moduleCell("Writing", data.writingBand)}
+                                    ${moduleCell("Speaking", data.speakingBand)}
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- CTA -->
+                    <tr>
+                        <td style="padding:24px 40px 4px 40px; text-align:center;">
+                            <a href="${data.resultUrl}" style="display:inline-block; background:${BRAND.teal}; color:#ffffff; text-decoration:none; padding:14px 38px; border-radius:6px; font-family:Arial,Helvetica,sans-serif; font-size:14px; font-weight:bold; letter-spacing:0.5px;">View Detailed Result</a>
+                        </td>
+                    </tr>
+
+                    <!-- Closing -->
+                    <tr>
+                        <td style="padding:22px 40px 32px 40px; text-align:center;">
+                            <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:13.5px; line-height:1.7; color:${BRAND.body};">
+                                Thank you for choosing ${BRAND.name} for your IELTS preparation.<br/>We wish you continued success in your future endeavours.
+                            </p>
+                        </td>
+                    </tr>
+    `;
+    return emailShell("IELTS Result Published", inner);
 };
 
 // Send student registration email
@@ -396,4 +385,3 @@ export const EmailService = {
     sendStudentRegistrationEmail,
     sendResultPublishedEmail,
 };
-
