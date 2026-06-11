@@ -17,8 +17,13 @@ export const connectDB = async (): Promise<typeof mongoose> => {
 
     // Create new connection
     connectionPromise = mongoose.connect(process.env.DATABASE_URL as string, {
-        maxPoolSize: 10,
-        minPoolSize: 2,
+        // Raised from 10 -> 50 so bursts of concurrent exam-takers don't queue
+        // behind a 10-connection ceiling. Keep well under the Atlas 500-connection
+        // cap: with serverless, total = maxPoolSize x (warm instances), so 50 leaves
+        // headroom for several instances. Raise the tier (M10+) for true scaling.
+        maxPoolSize: 50,
+        // A few always-ready connections cut the ~50ms cold-connection cost per query.
+        minPoolSize: 5,
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
         bufferCommands: false,
