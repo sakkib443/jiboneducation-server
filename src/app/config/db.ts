@@ -16,14 +16,21 @@ export const connectDB = async (): Promise<typeof mongoose> => {
     }
 
     // Create new connection
+    // Tuned for Vercel serverless: each function instance keeps its OWN pool, so
+    // total connections = maxPoolSize x (warm instances). A big pool here just
+    // races toward the Atlas 500-connection cap and storms the shared tier on
+    // cold-start bursts. Keep the pool small and let Vercel scale instances.
     connectionPromise = mongoose.connect(process.env.DATABASE_URL as string, {
-        // Raised from 10 -> 50 so bursts of concurrent exam-takers don't queue
-        // behind a 10-connection ceiling. Keep well under the Atlas 500-connection
-        // cap: with serverless, total = maxPoolSize x (warm instances), so 50 leaves
-        // headroom for several instances. Raise the tier (M10+) for true scaling.
-        maxPoolSize: 50,
-        // A few always-ready connections cut the ~50ms cold-connection cost per query.
-        minPoolSize: 5,
+        // Enough for the few concurrent queries one warm instance handles; small
+        // enough that many instances together stay well under the 500 cap.
+        maxPoolSize: 10,
+        // 0 = open connections lazily. minPoolSize > 0 forces every cold instance
+        // to eagerly establish connections before serving, slowing cold starts and
+        // burning shared-tier connection slots. The opposite of what serverless wants.
+        minPoolSize: 0,
+        // Release connections from instances that go idle, freeing slots on the
+        // shared tier instead of holding them across the connection cap.
+        maxIdleTimeMS: 30000,
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
         bufferCommands: false,

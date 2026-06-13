@@ -442,16 +442,26 @@ const startExam = async (
         throw new Error("Student not found");
     }
 
-    // Check verification
-    const verification = await verifyExamId(examId);
-    if (!verification.valid) {
-        throw new Error(verification.message);
+    // Validate inline on the doc we just fetched. Previously this called
+    // verifyExamId(), which ran a SECOND identical Student.findOne — a wasted
+    // round trip to a distant DB on every exam start. Same checks, same messages.
+    if (!student.isActive) {
+        throw new Error("This account has been deactivated");
+    }
+    if (student.paymentStatus !== "paid") {
+        throw new Error("Payment not confirmed. Please contact admin.");
+    }
+    if (student.examStatus === "completed" && !student.canRetake) {
+        throw new Error("You have already completed this exam");
+    }
+    if (student.examStatus === "terminated") {
+        throw new Error("Your exam was terminated due to violations");
     }
 
     // If exam is already in progress, return existing session for resume
-    if (verification.resumeExam && verification.sessionId) {
+    if (student.examStatus === "in-progress" && student.examSessionId) {
         return {
-            sessionId: verification.sessionId,
+            sessionId: student.examSessionId,
             examId: student.examId,
             studentName: student.nameEnglish,
             assignedSets: student.assignedSets,
